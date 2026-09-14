@@ -1,0 +1,79 @@
+---
+description: Artform UI system — Apple-like, shadcn/ui, tokens only. Apply whenever creating or changing any user-facing UI.
+globs: **/*.{tsx,jsx,css,html,vue,svelte}
+alwaysApply: true
+version: 1.0.0
+---
+
+# Artform UI system
+
+If this task does **not** create or change a user-facing screen, ignore this file.
+
+If it does — new page, existing page, dashboard, form, empty state, marketing shell, Operator Console, or internal tool — you are not inventing a look. You are configuring the Artform kit. Full playbook: `docs/ARTFORM_UI_SYSTEM.md`.
+
+## Why this exists
+
+Cursor has no visual canvas. Unconstrained CSS is why agent-built UIs look amateur next to Base44. Base44 looks good because it wires a **pre-built design system**. Artform's equivalent is already in this repo: **shadcn/ui (New York) + Tailwind + CSS variables + Inter/Syne**. Use that. Do not write a second stylesheet.
+
+## Stack (do not substitute)
+
+- **Components:** shadcn/ui at `@/components/ui/*`. Add missing pieces with `npx shadcn@latest add <name>` (non-interactive). Never hand-roll Button, Card, Dialog, Input, Select, Table, Tabs, Toast, Sheet, Dropdown.
+- **Styling:** Tailwind utility classes only. No new CSS files, no CSS-in-JS, no MUI/Chakra/Ant, no inline `style={{ color: '#…' }}` except for truly dynamic values (chart series from data).
+- **Color:** only semantic tokens — `bg-background`, `text-foreground`, `bg-card`, `text-muted-foreground`, `border-border`, `bg-primary`, `text-primary`, `bg-destructive`, `ring-ring`. **Never invent hex or raw hsl.** Brand accent is the existing `--primary` teal.
+- **Type:** body `font-inter` (or the default body font). Headings `font-syne tracking-tight`. Do not add a third font.
+- **Icons:** `lucide-react` only.
+- **Motion:** existing `framer-motion` + `tailwindcss-animate`. Subtle, 150–250ms, opacity/translate only. **No Magic UI / Aceternity / sparkle landings on operational tools.** Those libraries are allowed only on an explicit marketing/landing brief, and even then they must still use Artform tokens.
+
+## Aesthetic (Apple-like, not "SaaS rainbow")
+
+- One primary action per screen. Secondary actions are outline/ghost.
+- Ample whitespace: page padding `px-4 md:px-6 py-8`, vertical rhythm `space-y-6` or `space-y-8`.
+- Cards: `rounded-xl border border-border bg-card shadow-sm`. No heavy drop shadows, no neon glow on data pages (Tessa chat glow utilities stay on chat only).
+- Density: comfortable, not cramped. Tables stay `text-sm` with `tabular-nums` for money and dates.
+- Radius comes from `--radius` (0.75rem). Do not mix `rounded-sm` buttons with `rounded-3xl` cards on the same page.
+- Light and dark both work through tokens. Do not hard-code `bg-white` or `bg-black`.
+- Mobile first: tap targets ≥ 40px, no hover-only actions, stack columns under `md`.
+
+## Layout (copy this skeleton)
+
+```jsx
+import { PageShell, PageHeader, MetricCard, EmptyState } from "@/components/artform";
+// Tessa pages also keep PageNav for Back / Home.
+
+<PageShell nav={/* PageNav on Tessa; App header on standalone apps */}>
+  <PageHeader
+    eyebrow="Optional section"
+    title="Name of the decision this page supports"
+    description="One sentence: what the user should do with what they see."
+    action={/* one primary Button */}
+  />
+  {/* optional MetricCard row */}
+  {/* one main Card or Table */}
+  {/* EmptyState when there is nothing to show */}
+</PageShell>
+```
+
+## Copy and information design
+
+- Headline the **decision**, not the dataset. A correctly computed number that is wrong to act on is a defect.
+- Empty, loading, and error states are first-class: `Skeleton` while loading, `EmptyState` when zero rows, `Alert` for failures with a retry.
+- Do not decorate with gradients, glassmorphism, or decorative illustration unless the page is a marketing landing.
+
+## Existing vs new repos
+
+- **Tessa (`tessa-af`):** extend `@/components/ui` and `@/components/artform`. Do not run `shadcn init` again.
+- **This template / any app created from it:** add missing shadcn pieces with `npx shadcn@latest add <name>`. Keep the tokens in `src/app/globals.css`. Do not invent a second palette.
+
+## v0 (optional speed path)
+
+If the human pastes a [v0.dev](https://v0.dev) shell: restyle it onto Artform tokens and shadcn primitives before wiring data. Do not keep v0's invented colors, fonts, or custom CSS.
+
+## Auth (not optional on data screens)
+
+A pretty shell is not permission to skip auth. **No screen that reads Artform data or calls a credentialed API ships without a server-side auth gate.** The browser never holds `SIDEKICK_API_SECRET`, Procore secrets, or Smartsheet tokens. Skipping Base44 hosting is allowed only for tools that hold **no** Artform data and call **no** credentialed endpoint. Anything that reads Sidekick or writes Procore/Smartsheet needs its own ADR with a named auth decision — this UI kit is not that decision.
+
+## Done means
+
+- Uses shadcn + tokens; no new palette.
+- Readable at a glance on desktop and phone.
+- Verified in the browser (or the closest substitute) including empty/error paths — not a single screenshot of the happy path.
